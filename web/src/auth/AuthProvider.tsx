@@ -7,6 +7,8 @@ interface AppContext {
   user: AuthUser | null;
   loading: boolean;
   accounts: boolean; // comptes configurés sur ce serveur
+  accountName: string; // nom du fournisseur de comptes, vide si l'hébergeur n'en donne pas
+  guestPlay: boolean; // jouer sans compte est permis
   signIn: (next?: string) => void;
   signOut: () => void;
 }
@@ -17,13 +19,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [oidcUser, setOidcUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState(false);
+  const [accountName, setAccountName] = useState("");
+  const [guestPlay, setGuestPlay] = useState(true);
 
   useEffect(() => {
     let cleanup = () => {};
     api
       .config()
       .then(async (cfg) => {
-        configureAuth(cfg.oidcIssuer, cfg.oidcClientId);
+        setAccountName(cfg.auth.accountName ?? "");
+        setGuestPlay(cfg.auth.guestPlay);
+        configureAuth(cfg.auth.oidc?.issuer ?? "", cfg.auth.oidc?.clientId ?? "");
         const m = userManager();
         setAccounts(Boolean(m));
         if (!m) return;
@@ -53,10 +59,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       user: toAuthUser(oidcUser),
       loading,
       accounts,
+      accountName,
+      guestPlay,
       signIn: (next) => void signIn(next),
       signOut: () => void signOut(),
     }),
-    [oidcUser, loading, accounts],
+    [oidcUser, loading, accounts, accountName, guestPlay],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

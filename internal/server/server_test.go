@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/alexis-marcel/coda/internal/game"
+	"github.com/alexis-marcel/gamekit/auth"
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 )
@@ -26,6 +27,19 @@ type harness struct {
 	http  *httptest.Server
 	store *Store
 }
+
+// testAuth : compte de test « Authorization: Bearer user:<id> ».
+type testAuth struct{ guests bool }
+
+func (testAuth) User(r *http.Request) *User {
+	if b := auth.Bearer(r); strings.HasPrefix(b, "user:") {
+		id := strings.TrimPrefix(b, "user:")
+		return &User{ID: id, Name: "Compte " + id}
+	}
+	return nil
+}
+
+func (a testAuth) Info() auth.Info { return auth.Info{Mode: "test", GuestPlay: a.guests} }
 
 func newHarness(t *testing.T) *harness {
 	t.Helper()
@@ -39,17 +53,9 @@ func newHarness(t *testing.T) *harness {
 
 func startHarness(t *testing.T, store *Store) *harness {
 	t.Helper()
-	srv, err := New(Config{Store: store, Log: slog.New(slog.NewTextHandler(io.Discard, nil))})
+	srv, err := New(Config{Store: store, Auth: testAuth{guests: true}, Log: slog.New(slog.NewTextHandler(io.Discard, nil))})
 	if err != nil {
 		t.Fatal(err)
-	}
-	// Compte de test : « Authorization: Bearer user:<id> ».
-	srv.testUser = func(r *http.Request) *User {
-		if b := bearer(r); strings.HasPrefix(b, "user:") {
-			id := strings.TrimPrefix(b, "user:")
-			return &User{ID: id, Name: "Compte " + id}
-		}
-		return nil
 	}
 	h := &harness{t: t, srv: srv, http: httptest.NewServer(srv.Handler()), store: store}
 	t.Cleanup(h.http.Close)
@@ -391,3 +397,37 @@ func TestStaticAndHealth(t *testing.T) {
 }
 
 func writeFile(path, content string) error { return os.WriteFile(path, []byte(content), 0o644) }
+
+func TestGuestPlayOff(t *testing.T) {
+	store, err := OpenStore(filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { store.Close() })
+	srv, err := New(Config{Store: store, Auth: testAuth{guests: false}, Log: slog.New(slog.NewTextHandler(io.Discard, nil))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := &harness{t: t, srv: srv, http: httptest.NewServer(srv.Handler()), store: store}
+	t.Cleanup(h.http.Close)
+
+	var cfg struct{ Auth auth.Info }
+	if h.get("/api/config", "", &cfg); cfg.Auth.GuestPlay {
+		t.Fatalf("config %+v", cfg)
+	}
+	body := map[string]any{}
+	_ = json.Unmarshal([]byte(`{"name": "Invité", "seats": 2}`), &body)
+	if st := h.post("/api/games", "", body, nil); st != http.StatusUnauthorized {
+		t.Fatalf("création en invité : %d", st)
+	}
+	var c struct{ ID string }
+	if st := h.post("/api/games", "user:alice", body, &c); st != http.StatusCreated {
+		t.Fatalf("création avec un compte : %d", st)
+	}
+	if st := h.post("/api/games/"+c.ID+"/join", "", body, nil); st != http.StatusUnauthorized {
+		t.Fatalf("arrivée en invité : %d", st)
+	}
+	if st := h.post("/api/games/"+c.ID+"/join", "user:bob", body, nil); st != http.StatusOK {
+		t.Fatalf("arrivée avec un compte : %d", st)
+	}
+}

@@ -28,7 +28,7 @@ export function turnLabel(ms: number) {
 }
 
 function CreateForm() {
-  const { user, loading } = useApp();
+  const { user, loading, accountName, guestPlay, signIn } = useApp();
   const navigate = useNavigate();
   const [name, setName] = useState(guestName);
   const [seats, setSeats] = useState(2);
@@ -51,6 +51,18 @@ function CreateForm() {
       setBusy(false);
     }
   };
+
+  if (!user && !loading && !guestPlay) {
+    return (
+      <section className="panel">
+        <h2>Nouvelle partie</h2>
+        <p className="muted">Il faut un compte pour jouer ici.</p>
+        <button className="btn btn-primary" onClick={() => signIn()}>
+          {accountName ? `Se connecter avec ${accountName}` : "Se connecter"}
+        </button>
+      </section>
+    );
+  }
 
   return (
     <form className="panel" onSubmit={submit}>

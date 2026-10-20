@@ -1,8 +1,8 @@
 import { InMemoryWebStorage, UserManager, WebStorageStateStore, type User } from "oidc-client-ts";
 
-// Compte Eriphe (Authentik) : client public avec PKCE, jetons en mémoire
+// Fournisseur OIDC (mode oidc, ex. Authentik) : client public avec PKCE, jetons en mémoire
 // seulement. Au chargement et au renouvellement, une iframe cachée
-// (prompt=none) demande au fournisseur : déjà connecté sur eriphe.com, on l'est
+// (prompt=none) demande au fournisseur : déjà connecté ailleurs chez lui, on l'est
 // ici sans clic. La configuration vient du serveur (/api/config).
 
 let manager: UserManager | null = null;

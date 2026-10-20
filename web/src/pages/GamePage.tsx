@@ -75,7 +75,7 @@ export function GamePage({ id }: { id: string }) {
 // ---- salle d'attente
 
 function Waiting({ s, sock, onJoined }: { s: GameView; sock: GameSocket; onJoined: (t: string) => void }) {
-  const { user, loading, accounts, signIn } = useApp();
+  const { user, loading, accounts, accountName, guestPlay, signIn } = useApp();
   const [name, setName] = useState(guestName);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -145,7 +145,14 @@ function Waiting({ s, sock, onJoined }: { s: GameView; sock: GameSocket; onJoine
             <p>
               Tu joues en tant que <strong>{user.name}</strong>.
             </p>
-          ) : loading ? null : (
+          ) : loading ? null : !guestPlay ? (
+            <p>
+              Il faut un compte pour jouer ici.{" "}
+              <button type="button" className="link" onClick={() => signIn()}>
+                {accountName ? `Se connecter avec ${accountName}` : "Se connecter"}
+              </button>
+            </p>
+          ) : (
             <>
               <label className="field">
                 <span>Ton nom</span>
@@ -155,14 +162,14 @@ function Waiting({ s, sock, onJoined }: { s: GameView; sock: GameSocket; onJoine
                 <p className="muted">
                   Ou{" "}
                   <button type="button" className="link" onClick={() => signIn()}>
-                    connecte-toi avec ton compte Eriphe
+                    {accountName ? `connecte-toi avec ton compte ${accountName}` : "connecte-toi avec ton compte"}
                   </button>{" "}
                   pour garder tes parties.
                 </p>
               )}
             </>
           )}
-          <button className="btn btn-primary" disabled={loading}>
+          <button className="btn btn-primary" disabled={loading || (!user && !guestPlay)}>
             Prendre une place
           </button>
         </form>

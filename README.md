@@ -48,8 +48,20 @@ go run ./cmd/server                             # :8080, données dans ./data
 cd web && npm install && npm run dev            # :5173, /api et /ws vers :8080
 ```
 
-Variables : `ADDR` (`:8080`), `DATA_DIR` (`data`), `STATIC_DIR` (front compilé), `OIDC_ISSUER` (sans : invités seulement),
-`OIDC_CLIENT_ID` (`coda`), `OIDC_AUDIENCE` (= client), `ALLOWED_ORIGINS` (origines WebSocket en plus du même hôte).
+Variables : `ADDR` (`:8080`), `DATA_DIR` (`data`), `STATIC_DIR` (front compilé), `ALLOWED_ORIGINS` (origines
+WebSocket en plus du même hôte).
+
+### Comptes (facultatifs)
+
+On joue toujours en invité ; un compte sert à garder ses parties. La méthode se choisit à l'hébergement, par
+[gamekit/auth](https://github.com/alexis-marcel/gamekit) :
+
+| Variable | Rôle | Défaut |
+|---|---|---|
+| `AUTH_MODE` | `none` (pas de comptes) ou `oidc` (Authentik, Keycloak, Authelia, Google…) | `oidc` si `OIDC_ISSUER` est donné |
+| `GUEST_PLAY` | `false` : un compte est exigé pour créer ou rejoindre une partie | `true` |
+| `ACCOUNT_NAME` | nom du fournisseur dans l'interface (« Se connecter avec … ») | « Se connecter » |
+| `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_AUDIENCE` | fournisseur OIDC ; client public avec PKCE, redirections `/auth/callback` et `/auth/silent` | client : `coda`, audience : le client |
 
 ## Déploiement
 

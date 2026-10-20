@@ -1,5 +1,5 @@
 import { accessToken } from "./oidc";
-import type { CurrentGame, Me, OpenGame } from "./types";
+import type { AuthInfo, CurrentGame, Me, OpenGame } from "./types";
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {};
@@ -13,7 +13,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
-  config: () => request<{ oidcIssuer: string; oidcClientId: string }>("GET", "/api/config"),
+  config: () => request<{ auth: AuthInfo }>("GET", "/api/config"),
   open: () => request<OpenGame[]>("GET", "/api/games/open"),
   me: () => request<Me>("GET", "/api/me"),
   current: (tokens: Record<string, string>) => request<CurrentGame[]>("POST", "/api/games/current", { tokens }),
