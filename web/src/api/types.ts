@@ -78,3 +78,18 @@ export interface Me {
   stats: { played: number; won: number };
   games: HistoryItem[];
 }
+
+export interface CurrentGame {
+  id: string;
+  phase: "waiting" | "playing";
+  seat: number;
+  players: number;
+  seats: number;
+  /** Vide : en attente des autres joueurs. */
+  opponents: string[];
+  yourMove: boolean;
+  /** Qui joue, en cours de partie. */
+  turn?: string;
+  out: boolean;
+  created: string;
+}

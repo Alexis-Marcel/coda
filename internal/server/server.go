@@ -78,6 +78,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/config", s.handleConfig)
 	mux.HandleFunc("POST /api/games", s.handleCreate)
 	mux.HandleFunc("GET /api/games/open", s.handleOpen)
+	mux.HandleFunc("POST /api/games/current", s.handleCurrent)
 	mux.HandleFunc("GET /api/games/{id}", s.handleGame)
 	mux.HandleFunc("POST /api/games/{id}/join", s.handleJoin)
 	mux.HandleFunc("GET /api/me", s.handleMe)
@@ -196,6 +197,19 @@ func (s *Server) handleGame(w http.ResponseWriter, r *http.Request) {
 	v := g.view(-1, s.now())
 	g.mu.Unlock()
 	writeJSON(w, http.StatusOK, v)
+}
+
+// handleCurrent : les parties en cours du navigateur (ses jetons de place, au
+// plus 200) et du compte connecté.
+func (s *Server) handleCurrent(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Tokens map[string]string `json:"tokens"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Tokens) > 200 {
+		writeError(w, http.StatusBadRequest, "requête invalide")
+		return
+	}
+	writeJSON(w, http.StatusOK, s.currentGames(req.Tokens, s.user(r)))
 }
 
 func (s *Server) handleOpen(w http.ResponseWriter, r *http.Request) {

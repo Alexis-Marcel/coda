@@ -219,6 +219,7 @@ input:not([type]),
   flex-wrap: wrap;
 }
 .segmented label {
+  position: relative;
   flex: 1;
   min-width: 4.5rem;
   display: grid;
@@ -234,7 +235,12 @@ input:not([type]),
   box-shadow: inset 0 0 0 1px var(--brass);
 }
 .segmented input {
+  /* Caché dans son étiquette : sans parent positionné, il partait hors de la page. */
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
   pointer-events: none;
 }
@@ -282,6 +288,12 @@ input:not([type]),
 }
 .rows li:first-child {
   border-top: none;
+}
+.turn-mine {
+  color: var(--brass);
+}
+.current .rows li > span:nth-child(2) {
+  font-size: 0.875rem;
 }
 .row-main {
   flex: 1;

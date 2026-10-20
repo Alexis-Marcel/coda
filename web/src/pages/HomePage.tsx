@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, guestName, saveGuestName, saveSeatToken } from "../api/client";
-import type { Me, OpenGame, TileView } from "../api/types";
+import { api, guestName, saveGuestName, saveSeatToken, seatTokens } from "../api/client";
+import type { CurrentGame, Me, OpenGame, TileView } from "../api/types";
 import { useApp } from "../auth/AuthProvider";
 import { Header } from "../components/Header";
 import { Tile } from "../components/Tile";
@@ -94,6 +94,45 @@ function CreateForm() {
       </button>
     </form>
   );
+}
+
+// Parties pas finies de ce navigateur (ou du compte), pour y revenir après avoir fermé l'onglet.
+function CurrentGames() {
+  const { user } = useApp();
+  const [games, setGames] = useState<CurrentGame[]>([]);
+  useEffect(() => {
+    let stop = false;
+    const load = () => api.current(seatTokens()).then((g) => !stop && setGames(g), () => {});
+    void load();
+    const t = setInterval(load, 10000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [user]);
+  if (games.length === 0) return null;
+  return (
+    <section className="panel current">
+      <h2>Tes parties en cours</h2>
+      <ul className="rows">
+        {games.map((g) => (
+          <li key={g.id}>
+            <span className="row-main">{g.opponents.length ? `avec ${g.opponents.join(", ")}` : "en attente des autres joueurs"}</span>
+            <span className={g.yourMove ? "turn-mine" : "muted"}>{currentStatus(g)}</span>
+            <Link className={`btn btn-small ${g.yourMove ? "btn-primary" : ""}`} to={`/g/${g.id}`}>
+              Reprendre
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function currentStatus(g: CurrentGame): string {
+  if (g.phase === "waiting") return `${g.players}/${g.seats} joueurs`;
+  if (g.out) return "éliminé, la partie continue";
+  return g.yourMove ? "à toi de jouer" : `à ${g.turn}`;
 }
 
 function OpenGames() {
@@ -213,6 +252,7 @@ export function HomePage() {
         </section>
         <div className="home-grid">
           <div className="home-col">
+            <CurrentGames />
             <CreateForm />
             <MyGames />
           </div>

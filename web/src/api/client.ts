@@ -1,5 +1,5 @@
 import { accessToken } from "./oidc";
-import type { Me, OpenGame } from "./types";
+import type { CurrentGame, Me, OpenGame } from "./types";
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {};
@@ -16,6 +16,7 @@ export const api = {
   config: () => request<{ oidcIssuer: string; oidcClientId: string }>("GET", "/api/config"),
   open: () => request<OpenGame[]>("GET", "/api/games/open"),
   me: () => request<Me>("GET", "/api/me"),
+  current: (tokens: Record<string, string>) => request<CurrentGame[]>("POST", "/api/games/current", { tokens }),
   create: (name: string, seats: number, turnTime: number, isPublic: boolean) =>
     request<{ id: string; token: string; seat: number }>("POST", "/api/games", { name, seats, turnTime, public: isPublic }),
   join: (id: string, name: string) => request<{ token: string; seat: number }>("POST", `/api/games/${id}/join`, { name }),
@@ -30,6 +31,18 @@ export function seatToken(id: string): string | null {
   } catch {
     return null;
   }
+}
+
+/** Les places gardées dans ce navigateur (au plus 200). */
+export function seatTokens(): Record<string, string> {
+  const out: Record<string, string> = {};
+  try {
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith("coda:seat:"));
+    for (const k of keys.slice(0, 200)) out[k.slice("coda:seat:".length)] = localStorage.getItem(k) ?? "";
+  } catch {
+    /* stockage indisponible */
+  }
+  return out;
 }
 
 export function saveSeatToken(id: string, token: string) {

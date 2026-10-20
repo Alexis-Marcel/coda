@@ -9,6 +9,7 @@ import (
 	"errors"
 	"math/big"
 	mrand "math/rand/v2"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -326,6 +327,57 @@ func (s *Server) openGames() []openGame {
 		g.mu.Unlock()
 	}
 	return out
+}
+
+// currentGames liste les parties pas encore finies où l'on est assis : par les
+// jetons de place gardés dans le navigateur, ou par le compte. Toutes ces
+// parties sont en mémoire (reprises au démarrage, retirées seulement une fois finies).
+func (s *Server) currentGames(tokens map[string]string, u *User) []currentGame {
+	s.mu.Lock()
+	games := make([]*live, 0, len(s.games))
+	for _, g := range s.games {
+		games = append(games, g)
+	}
+	s.mu.Unlock()
+	out := []currentGame{}
+	for _, g := range games {
+		g.mu.Lock()
+		r, m := g.rec, g.rec.Match
+		if !r.Canceled && m.Phase != game.Finished {
+			if tok, ok := tokens[r.ID]; ok || u != nil {
+				if seat := g.seatOf(tok, u); seat >= 0 {
+					cg := currentGame{ID: r.ID, Phase: string(m.Phase), Seat: seat, Players: len(m.Players), Seats: m.Config.Seats,
+						Opponents: []string{}, Out: m.Players[seat].Out, Created: r.Created}
+					for i, p := range m.Players {
+						if i != seat {
+							cg.Opponents = append(cg.Opponents, p.Name)
+						}
+					}
+					if m.Phase == game.Playing {
+						cg.YourMove = m.Turn == seat
+						cg.Turn = m.Players[m.Turn].Name
+					}
+					out = append(out, cg)
+				}
+			}
+		}
+		g.mu.Unlock()
+	}
+	slices.SortFunc(out, func(a, b currentGame) int { return b.Created.Compare(a.Created) })
+	return out
+}
+
+type currentGame struct {
+	ID        string    `json:"id"`
+	Phase     string    `json:"phase"`
+	Seat      int       `json:"seat"`
+	Players   int       `json:"players"`
+	Seats     int       `json:"seats"`
+	Opponents []string  `json:"opponents"` // vide : en attente des autres joueurs
+	YourMove  bool      `json:"yourMove"`
+	Turn      string    `json:"turn,omitempty"` // qui joue
+	Out       bool      `json:"out"`            // éliminé, la partie continue sans toi
+	Created   time.Time `json:"created"`
 }
 
 type openGame struct {

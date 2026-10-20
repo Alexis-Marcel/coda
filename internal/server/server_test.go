@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -186,6 +187,21 @@ func TestFullGame(t *testing.T) {
 		t.Fatalf("partie inconnue %d", st)
 	}
 	clients := []*wsClient{a, b, h.dial(c.ID, "token="+jc.Token)}
+
+	// Parties en cours : par le jeton de place, ou par le compte ; un faux jeton ne trouve rien.
+	var cur []currentGame
+	h.post("/api/games/current", "", map[string]any{"tokens": map[string]string{c.ID: jb.Token, "nope": "x"}}, &cur)
+	if len(cur) != 1 || cur[0].Seat != 1 || !slices.Equal(cur[0].Opponents, []string{"Compte alice", "Compte carol"}) {
+		t.Fatalf("en cours (jeton) %+v", cur)
+	}
+	h.post("/api/games/current", "user:carol", map[string]any{}, &cur)
+	if len(cur) != 1 || cur[0].Seat != 2 || cur[0].Players != 3 {
+		t.Fatalf("en cours (compte) %+v", cur)
+	}
+	h.post("/api/games/current", "", map[string]any{"tokens": map[string]string{c.ID: "faux"}}, &cur)
+	if len(cur) != 0 {
+		t.Fatalf("en cours (mauvais jeton) %+v", cur)
+	}
 
 	// Partie pleine : elle démarre seule.
 	s := b.until(phase("playing")).State
