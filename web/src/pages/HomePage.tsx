@@ -28,7 +28,7 @@ export function turnLabel(ms: number) {
 }
 
 function CreateForm() {
-  const { user } = useApp();
+  const { user, loading } = useApp();
   const navigate = useNavigate();
   const [name, setName] = useState(guestName);
   const [seats, setSeats] = useState(2);
@@ -55,7 +55,8 @@ function CreateForm() {
   return (
     <form className="panel" onSubmit={submit}>
       <h2>Nouvelle partie</h2>
-      {!user && (
+      {/* Le temps de savoir si l'on est connecté, pas de champ « invité ». */}
+      {!user && !loading && (
         <label className="field">
           <span>Ton nom</span>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Invité" autoComplete="nickname" />
@@ -89,7 +90,7 @@ function CreateForm() {
         <span>Visible dans les parties ouvertes (sinon, seulement par le lien)</span>
       </label>
       {error && <p className="error">{error}</p>}
-      <button className="btn btn-primary" disabled={busy}>
+      <button className="btn btn-primary" disabled={busy || loading}>
         Créer la partie
       </button>
     </form>
