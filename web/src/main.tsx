@@ -8,7 +8,7 @@ import "./styles.css";
 if (window.location.pathname === "/auth/silent") {
   // Iframe de connexion silencieuse : on rend la main au parent, rien à afficher.
   void api.config().then((cfg) => {
-    configureAuth(cfg.auth.oidc?.issuer ?? "", cfg.auth.oidc?.clientId ?? "");
+    configureAuth(cfg.auth.oidc?.issuer ?? "", cfg.auth.oidc?.clientId ?? "", cfg.auth.oidc?.metadata);
     void userManager()?.signinSilentCallback().catch(() => {});
   });
 } else {

@@ -109,7 +109,8 @@ export interface AuthInfo {
   accountName?: string;
   /** Jouer sans compte est permis. */
   guestPlay: boolean;
-  oidc?: { issuer: string; clientId: string };
+  /** metadata : la découverte du fournisseur, déjà faite par le serveur (un aller-retour de moins). */
+  oidc?: { issuer: string; clientId: string; metadata?: Record<string, string> };
   /** Mode proxy : pages de connexion et de déconnexion du reverse proxy. */
   proxy?: { loginUrl?: string; logoutUrl?: string };
   /** Mode local : pages de comptes servies par le jeu (/compte/). */

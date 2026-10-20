@@ -1,4 +1,4 @@
-import { InMemoryWebStorage, UserManager, WebStorageStateStore, type User } from "oidc-client-ts";
+import { InMemoryWebStorage, UserManager, WebStorageStateStore, type OidcMetadata, type User } from "oidc-client-ts";
 
 // Fournisseur OIDC (mode oidc, ex. Authentik) : client public avec PKCE, jetons en mémoire
 // seulement. Au chargement et au renouvellement, une iframe cachée
@@ -7,10 +7,12 @@ import { InMemoryWebStorage, UserManager, WebStorageStateStore, type User } from
 
 let manager: UserManager | null = null;
 
-export function configureAuth(issuer: string, clientId: string) {
+export function configureAuth(issuer: string, clientId: string, metadata?: Partial<OidcMetadata>) {
   if (!issuer || !clientId || manager) return;
   manager = new UserManager({
     authority: issuer,
+    // Découverte déjà faite par le serveur : pas de requête au fournisseur pour la relire.
+    ...(metadata ? { metadata } : {}),
     client_id: clientId,
     redirect_uri: `${window.location.origin}/auth/callback`,
     silent_redirect_uri: `${window.location.origin}/auth/silent`,
@@ -24,6 +26,26 @@ export function configureAuth(issuer: string, clientId: string) {
 
 export function userManager(): UserManager | null {
   return manager;
+}
+
+// Dernière session vue dans ce navigateur (« user » ou « guest », jamais de jeton) : quelqu'un
+// qui était invité voit tout de suite la page en invité, la vérification continue derrière.
+const LAST_SESSION = "auth:derniere-session";
+
+export function lastSessionWasUser(): boolean {
+  try {
+    return localStorage.getItem(LAST_SESSION) === "user";
+  } catch {
+    return false;
+  }
+}
+
+export function rememberSession(signedIn: boolean) {
+  try {
+    localStorage.setItem(LAST_SESSION, signedIn ? "user" : "guest");
+  } catch {
+    /* stockage indisponible : on attendra la vérification la prochaine fois */
+  }
 }
 
 export interface AuthUser {

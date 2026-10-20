@@ -12,7 +12,7 @@ export function AuthCallback() {
     once.current = true;
     (async () => {
       const cfg = await api.config();
-      configureAuth(cfg.auth.oidc?.issuer ?? "", cfg.auth.oidc?.clientId ?? "");
+      configureAuth(cfg.auth.oidc?.issuer ?? "", cfg.auth.oidc?.clientId ?? "", cfg.auth.oidc?.metadata);
       const u = await userManager()!.signinRedirectCallback();
       const next = (u.state as { next?: string } | undefined)?.next ?? "/";
       navigate(next.startsWith("/") ? next : "/", { replace: true });
