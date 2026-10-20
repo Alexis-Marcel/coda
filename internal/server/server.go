@@ -132,7 +132,9 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 }
 
 func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]any{"auth": s.auth.Info()})
+	// user : le compte de la requête, utile au front quand c'est le serveur qui
+	// le connaît (mode proxy) ; en mode oidc, le front a déjà le sien.
+	writeJSON(w, http.StatusOK, map[string]any{"auth": s.auth.Info(), "user": s.user(r)})
 }
 
 // Temps par tour proposés, en secondes (0 : illimité).

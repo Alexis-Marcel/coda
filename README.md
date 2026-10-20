@@ -58,10 +58,11 @@ On joue toujours en invité ; un compte sert à garder ses parties. La méthode 
 
 | Variable | Rôle | Défaut |
 |---|---|---|
-| `AUTH_MODE` | `none` (pas de comptes) ou `oidc` (Authentik, Keycloak, Authelia, Google…) | `oidc` si `OIDC_ISSUER` est donné |
+| `AUTH_MODE` | `none` (pas de comptes), `oidc` (Authentik, Keycloak, Authelia, Google…) ou `proxy` (reverse proxy qui authentifie déjà) | `oidc` si `OIDC_ISSUER` est donné |
 | `GUEST_PLAY` | `false` : un compte est exigé pour créer ou rejoindre une partie | `true` |
 | `ACCOUNT_NAME` | nom du fournisseur dans l'interface (« Se connecter avec … ») | « Se connecter » |
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_AUDIENCE` | fournisseur OIDC ; client public avec PKCE, redirections `/auth/callback` et `/auth/silent` | client : `coda`, audience : le client |
+| `TRUSTED_PROXIES`, `PROXY_USER_HEADER`, `PROXY_NAME_HEADER`, `PROXY_LOGIN_URL`, `PROXY_LOGOUT_URL` | mode `proxy` : voir [gamekit](https://github.com/alexis-marcel/gamekit#auth--comptes-au-choix-de-celui-qui-héberge) | `Remote-User`, `Remote-Name` |
 
 ## Déploiement
 

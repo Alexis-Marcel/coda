@@ -13,7 +13,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
-  config: () => request<{ auth: AuthInfo }>("GET", "/api/config"),
+  config: () => request<{ auth: AuthInfo; user: { id: string; name: string } | null }>("GET", "/api/config"),
   open: () => request<OpenGame[]>("GET", "/api/games/open"),
   me: () => request<Me>("GET", "/api/me"),
   current: (tokens: Record<string, string>) => request<CurrentGame[]>("POST", "/api/games/current", { tokens }),

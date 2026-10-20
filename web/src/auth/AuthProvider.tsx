@@ -9,6 +9,7 @@ interface AppContext {
   accounts: boolean; // comptes configurés sur ce serveur
   accountName: string; // nom du fournisseur de comptes, vide si l'hébergeur n'en donne pas
   guestPlay: boolean; // jouer sans compte est permis
+  canSignOut: boolean; // un bouton de déconnexion a un sens (mode proxy : seulement si le proxy en donne une page)
   signIn: (next?: string) => void;
   signOut: () => void;
 }
@@ -21,6 +22,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState(false);
   const [accountName, setAccountName] = useState("");
   const [guestPlay, setGuestPlay] = useState(true);
+  // Mode proxy : le reverse proxy connecte la personne, le serveur dit qui c'est.
+  const [proxy, setProxy] = useState<{ user: AuthUser | null; loginUrl?: string; logoutUrl?: string } | null>(null);
 
   useEffect(() => {
     let cleanup = () => {};
@@ -29,6 +32,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .then(async (cfg) => {
         setAccountName(cfg.auth.accountName ?? "");
         setGuestPlay(cfg.auth.guestPlay);
+        if (cfg.auth.mode === "proxy") {
+          const p = { user: cfg.user, ...cfg.auth.proxy };
+          setProxy(p);
+          setAccounts(Boolean(p.user || p.loginUrl));
+          return;
+        }
         configureAuth(cfg.auth.oidc?.issuer ?? "", cfg.auth.oidc?.clientId ?? "");
         const m = userManager();
         setAccounts(Boolean(m));
@@ -56,15 +65,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AppContext>(
     () => ({
-      user: toAuthUser(oidcUser),
+      user: proxy ? proxy.user : toAuthUser(oidcUser),
       loading,
       accounts,
       accountName,
       guestPlay,
-      signIn: (next) => void signIn(next),
-      signOut: () => void signOut(),
+      canSignOut: !proxy || Boolean(proxy.logoutUrl),
+      signIn: (next) => {
+        if (!proxy) void signIn(next);
+        else if (proxy.loginUrl) window.location.href = proxy.loginUrl;
+      },
+      signOut: () => {
+        if (!proxy) void signOut();
+        else if (proxy.logoutUrl) window.location.href = proxy.logoutUrl;
+      },
     }),
-    [oidcUser, loading, accounts, accountName, guestPlay],
+    [oidcUser, proxy, loading, accounts, accountName, guestPlay],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
