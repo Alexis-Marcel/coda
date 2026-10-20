@@ -82,6 +82,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/games/{id}", s.handleGame)
 	mux.HandleFunc("POST /api/games/{id}/join", s.handleJoin)
 	mux.HandleFunc("GET /api/me", s.handleMe)
+	mux.HandleFunc("GET /api/users/{id}", s.handleUserStats)
 	mux.HandleFunc("GET /ws/games/{id}", s.handleWS)
 	if s.cfg.StaticDir != "" {
 		mux.Handle("/", spa(s.cfg.StaticDir))
@@ -223,6 +224,17 @@ type historyItem struct {
 	Players   int         `json:"players"`
 	Reason    game.Reason `json:"reason"`
 	At        time.Time   `json:"at"`
+}
+
+// handleUserStats : le bilan public d'un compte (parties finies), par son
+// identifiant OIDC. Lu par le profil du portail Eriphe, comme celui de Gemline.
+func (s *Server) handleUserStats(w http.ResponseWriter, r *http.Request) {
+	st, err := s.store.stats(r.PathValue("id"))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "bilan indisponible")
+		return
+	}
+	writeJSON(w, http.StatusOK, st)
 }
 
 func (s *Server) handleMe(w http.ResponseWriter, r *http.Request) {
