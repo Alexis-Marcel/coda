@@ -11,6 +11,8 @@ services:
     ports:
       - "8787:8080"
     environment:
+      OIDC_ISSUER: https://auth.eriphe.com/application/o/coda/
+      OIDC_CLIENT_ID: coda
       ALLOWED_ORIGINS: coda.eriphe.com
     volumes:
       - /mnt/user/appdata/coda/data:/data   # coda.db (SQLite), propriétaire 65532
