@@ -1,0 +1,5 @@
+services:
+  coda:
+    labels:
+      net.unraid.docker.icon: https://coda.eriphe.com/favicon.svg
+      net.unraid.docker.webui: https://coda.eriphe.com

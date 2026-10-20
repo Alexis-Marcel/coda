@@ -1,0 +1,25 @@
+# Coda sur le NAS : https://coda.eriphe.com
+# Public via le tunnel Cloudflare (port 8787), à la maison et par Tailscale via Traefik.
+# Image publiée sur ghcr par l'action « Image Docker » à chaque push sur main.
+# Mise à jour : docker compose pull puis up -d (ou « Update stack » dans Unraid).
+name: coda
+services:
+  coda:
+    image: ghcr.io/alexis-marcel/coda:latest
+    container_name: coda
+    restart: unless-stopped
+    ports:
+      - "8787:8080"
+    environment:
+      ALLOWED_ORIGINS: coda.eriphe.com
+    volumes:
+      - /mnt/user/appdata/coda/data:/data   # coda.db (SQLite), propriétaire 65532
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: coda_default
+      traefik.http.routers.coda.rule: Host(`coda.eriphe.com`)
+      traefik.http.services.coda.loadbalancer.server.port: "8080"
