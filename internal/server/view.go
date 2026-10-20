@@ -1,6 +1,7 @@
 package server
 
 import (
+	"slices"
 	"time"
 
 	"github.com/alexis-marcel/coda/internal/game"
@@ -10,6 +11,7 @@ import (
 // tuiles et de celles qui sont retournées ; des autres, seulement la couleur.
 // La tuile piochée n'est connue que de celui qui l'a piochée. Tout est dévoilé
 // à la fin. Le journal ne contient rien de secret : il est envoyé tel quel.
+// La vue est encodée hors du verrou de la partie : elle ne partage rien avec elle.
 
 type tileView struct {
 	ID       int        `json:"id"`
@@ -64,8 +66,12 @@ func (g *live) view(seat int, now time.Time) gameView {
 	done := m.Phase == game.Finished
 	v := gameView{
 		ID: r.ID, Phase: phase, You: seat, Seats: m.Config.Seats, TurnMs: m.Config.TurnTime.Milliseconds(),
-		Pile: m.PileCount(), Actions: m.Actions, Result: m.Result, Rematch: r.Rematch, Next: r.Next, Public: r.Public,
+		Pile: m.PileCount(), Actions: slices.Clone(m.Actions), Rematch: slices.Clone(r.Rematch), Next: r.Next, Public: r.Public,
 		Players: []playerView{},
+	}
+	if m.Result != nil {
+		res := *m.Result
+		v.Result = &res
 	}
 	if v.Actions == nil {
 		v.Actions = []game.Action{}
