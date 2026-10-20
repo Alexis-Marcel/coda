@@ -51,6 +51,11 @@ cd web && npm install && npm run dev            # :5173, /api et /ws vers :8080
 Variables : `ADDR` (`:8080`), `DATA_DIR` (`data`), `STATIC_DIR` (front compilé), `ALLOWED_ORIGINS` (origines
 WebSocket en plus du même hôte).
 
+### Portail (facultatif)
+
+`PORTAL_URL` ajoute au-dessus du jeu une barre discrète vers l'accueil d'un portail ; `PORTAL_NAME`, `PORTAL_ICON`
+et `PROFILE_URL` (lien « Mon profil » pour les personnes connectées) la complètent. Sans `PORTAL_URL`, pas de barre.
+
 ### Comptes (facultatifs)
 
 On joue toujours en invité ; un compte sert à garder ses parties. La méthode se choisit à l'hébergement, par

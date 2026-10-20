@@ -13,6 +13,10 @@ services:
     environment:
       AUTH_MODE: oidc
       ACCOUNT_NAME: Eriphe
+      PORTAL_URL: https://eriphe.com
+      PORTAL_NAME: Eriphe
+      PORTAL_ICON: https://eriphe.com/favicon.svg
+      PROFILE_URL: https://eriphe.com/profil
       OIDC_ISSUER: https://auth.eriphe.com/application/o/coda/
       OIDC_CLIENT_ID: coda
       ALLOWED_ORIGINS: coda.eriphe.com

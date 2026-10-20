@@ -82,6 +82,30 @@ p {
 
 /* ---- barre du haut */
 
+/* Barre du portail (facultative, PORTAL_URL) : discrète, au-dessus de l'en-tête du jeu. */
+.portalbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 1.25rem;
+  font-size: 0.8rem;
+  background: color-mix(in srgb, var(--slate) 70%, black);
+  border-bottom: 1px solid var(--line);
+}
+.portalbar a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--mist);
+  text-decoration: none;
+}
+.portalbar a:hover {
+  color: var(--ivory);
+}
+.portalbar img {
+  border-radius: 4px;
+}
 .topbar {
   display: flex;
   align-items: center;

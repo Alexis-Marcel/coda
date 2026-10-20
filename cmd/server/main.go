@@ -15,6 +15,7 @@ import (
 
 	"github.com/alexis-marcel/coda/internal/server"
 	"github.com/alexis-marcel/gamekit/auth"
+	"github.com/alexis-marcel/gamekit/portal"
 )
 
 func env(key, def string) string {
@@ -89,7 +90,7 @@ func run(log *slog.Logger) error {
 	}
 
 	srv, err := server.New(server.Config{
-		Store: store, Auth: authn,
+		Store: store, Auth: authn, Portal: portal.FromEnv(os.Getenv),
 		StaticDir: os.Getenv("STATIC_DIR"), Origins: origins, Log: log,
 	})
 	if err != nil {

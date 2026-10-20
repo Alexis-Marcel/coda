@@ -94,6 +94,14 @@ export interface CurrentGame {
   created: string;
 }
 
+/** Portail dont le jeu fait partie (gamekit/portal), absent si le jeu vit seul. */
+export interface PortalInfo {
+  url: string;
+  name: string;
+  icon?: string;
+  profileUrl?: string;
+}
+
 /** Méthode de connexion choisie par l'hébergeur (gamekit/auth). */
 export interface AuthInfo {
   mode: string;
