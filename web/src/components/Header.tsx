@@ -14,7 +14,7 @@ export function Mark() {
 }
 
 export function Header({ children }: { children?: ReactNode }) {
-  const { user, loading, accounts, accountName, canSignOut, signIn, signOut } = useApp();
+  const { user, loading, accounts, accountName, accountUrl, canSignOut, signIn, signOut } = useApp();
   return (
     <header className="topbar">
       <Link to="/" className="brand" aria-label="Coda, accueil">
@@ -27,7 +27,13 @@ export function Header({ children }: { children?: ReactNode }) {
           !loading &&
           (user ? (
             <>
-              <span className="account-name">{user.name}</span>
+              {accountUrl ? (
+                <a className="account-name" href={accountUrl}>
+                  {user.name}
+                </a>
+              ) : (
+                <span className="account-name">{user.name}</span>
+              )}
               {canSignOut && (
                 <button className="btn btn-small btn-quiet" onClick={signOut}>
                   Se déconnecter

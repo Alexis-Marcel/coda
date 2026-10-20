@@ -61,6 +61,18 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	if acfg.Mode == auth.ModeLocal {
+		// Comptes intégrés : dans la base du jeu, pages /compte/ à ses couleurs.
+		if acfg.LocalStore, err = auth.NewSQLStore(ctx, store.DB(), auth.SQLite); err != nil {
+			return err
+		}
+		acfg.Theme = auth.Theme{
+			Title: "Coda", Background: "#243038", Surface: "#2b3942", Text: "#efe9dc", Muted: "#9fb0b7",
+			Line: "#44575f", Accent: "#d1a94f", OnAccent: "#15171c", Danger: "#e8846e",
+			Font:    `"Instrument Sans", system-ui, sans-serif`,
+			FontURL: "https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&display=swap",
+		}
+	}
 	actx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	authn, err := auth.New(actx, acfg, log)
 	cancel()

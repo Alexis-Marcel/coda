@@ -104,4 +104,6 @@ export interface AuthInfo {
   oidc?: { issuer: string; clientId: string };
   /** Mode proxy : pages de connexion et de déconnexion du reverse proxy. */
   proxy?: { loginUrl?: string; logoutUrl?: string };
+  /** Mode local : pages de comptes servies par le jeu (/compte/). */
+  local?: { loginUrl: string; logoutUrl: string; accountUrl: string; signup: string };
 }

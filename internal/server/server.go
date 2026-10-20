@@ -85,6 +85,9 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/me", s.handleMe)
 	mux.HandleFunc("GET /api/users/{id}", s.handleUserStats)
 	mux.HandleFunc("GET /ws/games/{id}", s.handleWS)
+	if m, ok := s.auth.(auth.Mounter); ok {
+		m.Mount(mux) // pages de comptes du mode local, sous /compte/
+	}
 	if s.cfg.StaticDir != "" {
 		mux.Handle("/", spa(s.cfg.StaticDir))
 	}
