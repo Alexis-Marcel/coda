@@ -3,7 +3,7 @@ module github.com/alexis-marcel/coda
 go 1.26.0
 
 require (
-	github.com/alexis-marcel/gamekit v0.6.0
+	github.com/alexis-marcel/gamekit v0.7.0
 	github.com/coder/websocket v1.8.14
 	modernc.org/sqlite v1.60.1
 )

@@ -16,6 +16,7 @@ import (
 	"github.com/alexis-marcel/coda/internal/server"
 	"github.com/alexis-marcel/gamekit/auth"
 	"github.com/alexis-marcel/gamekit/portal"
+	"github.com/alexis-marcel/gamekit/secure"
 )
 
 func env(key, def string) string {
@@ -99,7 +100,7 @@ func run(log *slog.Logger) error {
 	done := make(chan struct{})
 	go func() { srv.Run(ctx); close(done) }()
 
-	httpSrv := &http.Server{Addr: env("ADDR", ":8080"), Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
+	httpSrv := &http.Server{Addr: env("ADDR", ":8080"), Handler: secure.Headers(srv.Handler()), ReadHeaderTimeout: 10 * time.Second}
 	go func() {
 		<-ctx.Done()
 		sctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
